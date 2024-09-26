@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion de Présence à l'Internat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .form-section {
+            margin-bottom: 20px;
+        }
+        .submit-btn {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        .reset-btn {
+            padding: 5px 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .reset-btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Gestion de Présence à l'Internat</h1>
+
+    <!-- Section pour entrer la date et le moment -->
+    <div class="form-section">
+        <label for="date">Date : </label>
+        <input type="date" id="date" name="date"><br><br>
+
+        <label for="moment">Moment : </label>
+        <select id="moment" name="moment">
+            <option value="matin">Matin</option>
+            <option value="etude">Étude</option>
+            <option value="self">Self</option>
+        </select>
+    </div>
+
+    <!-- Table des élèves -->
+    <table>
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Classe</th>
+                <th>Présence</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Durand</td>
+                <td>Jean</td>
+                <td>6ème A</td>
+                <td>
+                    <label for="present-1">Présent</label>
+                    <input type="radio" id="present-1" name="presence-1" value="present">
+                    <label for="absent-1">Absent</label>
+                    <input type="radio" id="absent-1" name="presence-1" value="absent">
+                </td>
+                <td>
+                    <button class="reset-btn" onclick="resetSelection(1)">Supprimer sélection</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Martin</td>
+                <td>Claire</td>
+                <td>5ème B</td>
+                <td>
+                    <label for="present-2">Présent</label>
+                    <input type="radio" id="present-2" name="presence-2" value="present">
+                    <label for="absent-2">Absent</label>
+                    <input type="radio" id="absent-2" name="presence-2" value="absent">
+                </td>
+                <td>
+                    <button class="reset-btn" onclick="resetSelection(2)">Supprimer sélection</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Dupont</td>
+                <td>Lucas</td>
+                <td>4ème C</td>
+                <td>
+                    <label for="present-3">Présent</label>
+                    <input type="radio" id="present-3" name="presence-3" value="present">
+                    <label for="absent-3">Absent</label>
+                    <input type="radio" id="absent-3" name="presence-3" value="absent">
+                </td>
+                <td>
+                    <button class="reset-btn" onclick="resetSelection(3)">Supprimer sélection</button>
+                </td>
+            </tr>
+            <!-- Ajouter d'autres élèves ici -->
+        </tbody>
+    </table>
+
+    <!-- Bouton pour enregistrer en PDF -->
+    <button class="submit-btn" onclick="enregistrerPDF()">Enregistrer en PDF</button>
+
+    <script>
+        // Remplir automatiquement la date du jour
+        window.onload = function() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const dateInput = document.getElementById('date');
+            dateInput.value = `${year}-${month}-${day}`; // Format AAAA-MM-JJ
+        };
+
+        // Fonction pour réinitialiser la sélection d'une ligne élève
+        function resetSelection(rowNumber) {
+            const presentRadio = document.getElementById(`present-${rowNumber}`);
+            const absentRadio = document.getElementById(`absent-${rowNumber}`);
+            if (presentRadio) presentRadio.checked = false;
+            if (absentRadio) absentRadio.checked = false;
+        }
+
+        function enregistrerPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Récupérer la date et le moment
+            const date = document.getElementById("date").value || "Non renseigné";
+            const moment = document.getElementById("moment").value || "Non renseigné";
+
+            // Ajouter les informations générales au PDF
+            doc.setFontSize(16);
+            doc.text(`Gestion de Présence à l'Internat`, 10, 10);
+            doc.setFontSize(12);
+            doc.text(`Date : ${date}`, 10, 20);
+            doc.text(`Moment : ${moment}`, 10, 30);
+
+            // Ajouter un espace
+            doc.text(``, 10, 40);
+
+            // Récupérer les présences
+            const rows = [];
+            const presence1 = document.querySelector('input[name="presence-1"]:checked')?.value || "Non renseigné";
+            const presence2 = document.querySelector('input[name="presence-2"]:checked')?.value || "Non renseigné";
+            const presence3 = document.querySelector('input[name="presence-3"]:checked')?.value || "Non renseigné";
+
+            rows.push(["Durand", "Jean", "6ème A", presence1]);
+            rows.push(["Martin", "Claire", "5ème B", presence2]);
+            rows.push(["Dupont", "Lucas", "4ème C", presence3]);
+
+            // Ajouter le tableau des présences au PDF
+            doc.autoTable({
+                head: [['Nom', 'Prénom', 'Classe', 'Présence']],
+                body: rows,
+                startY: 40
+            });
+
+            // Nom du fichier PDF dans le format 'présence internat - date - moment'
+            const formattedDate = date.replace(/-/g, '_'); // Remplace les tirets par des underscores pour la compatibilité du nom de fichier
+            const fileName = `présence_internat-${formattedDate}-${moment}.pdf`;
+
+            // Enregistrer le fichier PDF
+            doc.save(fileName);
+        }
+    </script>
+
+    <!-- CDN pour la génération automatique des tableaux dans jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+</body>
+</html>
